@@ -3,10 +3,13 @@ library(rdhs)
 
 # Set up configuration of DHS API
 set_rdhs_config(
-  email = "christopherbboyer@gmail.com",
-  project = "Strengthening the evidence base for IPV prevention",
+  email = "jpinchoff@popcouncil.org",
+  project = "COVID vulnerability mapping",
+  password_prompt = TRUE,
   verbose_download = TRUE
 )
+
+password <- "Maps4COVID"
 
 # Get information about 2018 Zambia DHS
 survey <-
@@ -21,12 +24,12 @@ dataset <-
   dhs_datasets(
     surveyIds = survey$SurveyId,
     fileFormat = "flat",
-    fileType = c("PR", "KR") # 
+    fileType = c("PR", "KR", "IR", "MR", "AR", "GE") # 
   )
 
 # Download datasets to local computer using DHS API
 downloads <-
-  get_datasets(dataset$FileName)
+  get_datasets(dataset$FileName, clear_cache = TRUE)
 
 # Get list of questions necessary for analysis
 questions <-
@@ -51,22 +54,47 @@ questions <-
       "hv003",
       "v001",
       "v002",
-      "v003"
+      "v003",
+      "hivclust",
+      "hivnumb",
+      "hivline",
+      "hiv06",
+      "hiv07", 
+      "hiv08"
     )
   )
 
 # Extract relevant questions from the downloaded datasets
-extract <- extract_dhs(questions)
+extract <- extract_dhs(questions, add_geo = TRUE)
+
+geo_vars <- c(
+  "CLUSTER",
+  "ALT_DEM",
+  "LATNUM",
+  "LONGNUM",
+  "ADM1NAME",
+  "DHSREGNA",
+  "SurveyId"
+)
 
 # Join into a single analytic dataset
 df <- 
-  inner_join(
+  left_join(
     extract$ZMPR71FL,
-    extract$ZMKR71FL,
+    select(extract$ZMKR71FL, -geo_vars), 
     by = c(
       "hv001" = "v001",
       "hv002" = "v002",
       "hv003" = "v003"
+    )
+  ) %>%
+  left_join(
+    .,
+    select(extract$ZMAR71FL, -geo_vars),
+    by = c(
+      "hv001" = "hivclust",
+      "hv002" = "hivnumb",
+      "hv003" = "hivline"
     )
   )
 
