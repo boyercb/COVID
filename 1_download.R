@@ -48,7 +48,9 @@ questions <-
       "hv252",
       "h31",
       "h31b",
-      "hhid",
+      "hvidx",
+      "midx",
+      "b16",
       "hv001",
       "hv002",
       "hv003",
@@ -85,7 +87,7 @@ df <-
     by = c(
       "hv001" = "v001",
       "hv002" = "v002",
-      "hv003" = "v003"
+      "hvidx" = "b16"
     )
   ) %>%
   left_join(
@@ -94,7 +96,7 @@ df <-
     by = c(
       "hv001" = "hivclust",
       "hv002" = "hivnumb",
-      "hv003" = "hivline"
+      "hvidx" = "hivline"
     )
   )
 
